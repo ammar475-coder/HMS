@@ -1,0 +1,365 @@
+import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import Sidebar from '../../components/common/Sidebar'
+
+const NAV_LINKS = [
+  "Dashboard", "Patient Consultation", "Diagnosis",
+  "Prescription", "Lab Order", "Radiology Order", "Follow-up Manager",
+]
+
+const MOCK_PATIENTS = {
+  "T-009": {
+    name: "Sneha Patel", id: "P-1004",
+    allergies: ["Aspirin"],
+    diagnoses: [
+      { code: "I10",   name: "Essential Hypertension" },
+      { code: "I49.9", name: "Cardiac Arrhythmia, unspecified" },
+    ],
+  },
+  "T-010": {
+    name: "Rajesh Verma", id: "P-1045",
+    allergies: [],
+    diagnoses: [
+      { code: "I10", name: "Essential Hypertension" },
+    ],
+  },
+}
+
+const MEDICINE_LIST = [
+  "Metoprolol Succinate", "Atorvastatin", "Aspirin",
+  "Amlodipine", "Ramipril", "Furosemide", "Warfarin",
+  "Clopidogrel", "Digoxin", "Spironolactone",
+  "Paracetamol", "Ibuprofen", "Omeprazole", "Metformin",
+]
+
+const FREQUENCIES = ["Once daily", "Twice daily", "Three times daily", "At bedtime", "As needed"]
+
+function Prescription() {
+  const { token } = useParams()
+  const navigate  = useNavigate()
+  const { user }  = useAuth()
+  const [activeLink, setActiveLink] = useState("Prescription")
+
+  const patient = MOCK_PATIENTS[token] || {
+    name: "Unknown", id: "--", allergies: [], diagnoses: [],
+  }
+
+  // Add medicine form
+  const [medSearch,  setMedSearch]  = useState('')
+  const [medSuggestions, setMedSuggestions] = useState([])
+  const [selectedMed, setSelectedMed] = useState('')
+  const [dose,       setDose]       = useState('5mg')
+  const [frequency,  setFrequency]  = useState('Once daily')
+  const [duration,   setDuration]   = useState('30 days')
+  const [instructions, setInstructions] = useState('')
+
+  // Prescribed list
+  const [medicines, setMedicines] = useState([
+    { name: "Metoprolol Succinate", dose: "25mg", frequency: "Once daily", duration: "30 days", instructions: "After breakfast" },
+    { name: "Atorvastatin",         dose: "10mg", frequency: "At bedtime",  duration: "30 days", instructions: "Monitor LFT" },
+    { name: "Aspirin",              dose: "75mg", frequency: "Once daily",  duration: "—",       instructions: "" },
+  ])
+
+  // Doctor's advice
+  const [diet,     setDiet]     = useState('')
+  const [activity, setActivity] = useState('')
+  const [general,  setGeneral]  = useState('')
+
+  const isAllergic = (name) =>
+    patient.allergies.some(a => name.toLowerCase().includes(a.toLowerCase()))
+
+  const handleMedSearch = (val) => {
+    setMedSearch(val)
+    setSelectedMed('')
+    if (val.length < 2) { setMedSuggestions([]); return }
+    setMedSuggestions(
+      MEDICINE_LIST.filter(m => m.toLowerCase().includes(val.toLowerCase()))
+    )
+  }
+
+  const handleMedSelect = (med) => {
+    setSelectedMed(med)
+    setMedSearch(med)
+    setMedSuggestions([])
+  }
+
+  const handleAdd = () => {
+    if (!selectedMed) return
+    setMedicines(prev => [...prev, {
+      name: selectedMed, dose, frequency, duration,
+      instructions,
+    }])
+    setMedSearch(''); setSelectedMed(''); setDose('5mg')
+    setFrequency('Once daily'); setDuration('30 days'); setInstructions('')
+  }
+
+  const handleNavClick = (link) => {
+    setActiveLink(link)
+    if (link === "Dashboard")            navigate('/doctor')
+    if (link === "Patient Consultation") navigate(`/doctor/consultation/${token}`)
+    if (link === "Diagnosis")            navigate(`/doctor/diagnosis/${token}`)
+    if (link === "Lab Order")            navigate(`/doctor/lab-order/${token}`)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar links={NAV_LINKS} activeLink={activeLink} onLinkClick={handleNavClick} />
+
+      <main className="flex-1 p-6 overflow-auto">
+
+        {/* Breadcrumb + Title */}
+        <div className="mb-6">
+          <p className="text-xs text-gray-400 mb-1">
+            <span className="cursor-pointer hover:text-blue-500"
+              onClick={() => navigate('/doctor')}>Doctor</span>
+            {" › "}Prescription
+          </p>
+          <h2 className="text-2xl font-bold text-gray-800">Prescription</h2>
+          <p className="text-sm text-gray-400">
+            {patient.name} · {patient.id} · 19 Jun 2025
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-5">
+
+          {/* Left: Main content */}
+          <div className="col-span-2 flex flex-col gap-5">
+
+            {/* Add Medicine */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                🔗 Add Medicine
+              </h3>
+
+              {/* Input Row */}
+              <div className="grid grid-cols-4 gap-3 mb-3 items-end">
+
+                {/* Medicine Name */}
+                <div className="col-span-1 relative">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                    Medicine Name *
+                  </label>
+                  <input
+                    value={medSearch}
+                    onChange={e => handleMedSearch(e.target.value)}
+                    placeholder="Search drug..."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {medSuggestions.length > 0 && (
+                    <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                      {medSuggestions.map(m => (
+                        <button
+                          key={m}
+                          onClick={() => handleMedSelect(m)}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0
+                            ${isAllergic(m) ? 'text-red-500' : 'text-gray-700'}`}
+                        >
+                          {m}
+                          {isAllergic(m) && <span className="ml-2 text-xs">⚠ Allergic</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Dose */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                    Dose *
+                  </label>
+                  <input
+                    value={dose}
+                    onChange={e => setDose(e.target.value)}
+                    placeholder="5mg"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Frequency */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                    Frequency *
+                  </label>
+                  <select
+                    value={frequency}
+                    onChange={e => setFrequency(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {FREQUENCIES.map(f => <option key={f}>{f}</option>)}
+                  </select>
+                </div>
+
+                {/* Duration */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                    Duration *
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      value={duration}
+                      onChange={e => setDuration(e.target.value)}
+                      placeholder="30 days"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={handleAdd}
+                      disabled={!selectedMed}
+                      className="bg-gray-800 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition disabled:opacity-40 whitespace-nowrap"
+                    >
+                      + Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Prescribed Medicines Table */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <h3 className="font-semibold text-gray-700 mb-4">Prescribed Medicines</h3>
+
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-400 border-b border-gray-100">
+                    <th className="pb-3 font-medium w-6">#</th>
+                    <th className="pb-3 font-medium">Medicine</th>
+                    <th className="pb-3 font-medium">Dose</th>
+                    <th className="pb-3 font-medium">Frequency</th>
+                    <th className="pb-3 font-medium">Duration</th>
+                    <th className="pb-3 font-medium">Instructions</th>
+                    <th className="pb-3 font-medium">Edit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medicines.map((m, i) => (
+                    <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
+                      <td className="py-3 text-gray-400">{i + 1}</td>
+                      <td className="py-3 font-medium text-gray-800">{m.name}</td>
+                      <td className="py-3 text-gray-600">{m.dose}</td>
+                      <td className="py-3">
+                        <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full">
+                          {m.frequency}
+                        </span>
+                      </td>
+                      <td className="py-3 text-gray-600">{m.duration}</td>
+                      <td className="py-3">
+                        {isAllergic(m.name) ? (
+                          <span className="text-red-500 text-xs font-semibold flex items-center gap-1">
+                            ⚠ ALLERGIC TO {m.name.toUpperCase()}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-xs">{m.instructions || '—'}</span>
+                        )}
+                      </td>
+                      <td className="py-3">
+                        <button
+                          onClick={() => setMedicines(prev => prev.filter((_, idx) => idx !== i))}
+                          className="text-xs text-blue-500 hover:underline"
+                        >
+                          ✏️ EDIT
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Send to Pharmacy */}
+              <div className="flex justify-end mt-4">
+                <button className="bg-gray-800 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-gray-700 transition flex items-center gap-2">
+                  ↗ Send to Pharmacy
+                </button>
+              </div>
+            </div>
+
+            {/* Doctor's Advice */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <h3 className="font-semibold text-gray-700 mb-4">Doctor's Advice</h3>
+
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                    Diet Instructions
+                  </label>
+                  <textarea
+                    value={diet}
+                    onChange={e => setDiet(e.target.value)}
+                    placeholder="Low sodium diet, avoid oily food..."
+                    rows={3}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                    Activity Instructions
+                  </label>
+                  <textarea
+                    value={activity}
+                    onChange={e => setActivity(e.target.value)}
+                    placeholder="Moderate exercise 30 min daily..."
+                    rows={3}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  General Instructions
+                </label>
+                <textarea
+                  value={general}
+                  onChange={e => setGeneral(e.target.value)}
+                  placeholder="Monitor BP daily, return immediately if chest pain worsens..."
+                  rows={3}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+
+              {/* Complete Consultation */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => navigate('/doctor')}
+                  className="bg-gray-800 text-white text-sm px-6 py-2.5 rounded-lg hover:bg-gray-700 transition flex items-center gap-2"
+                >
+                  ✓ Complete Consultation
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right: Current Diagnosis */}
+          <div className="col-span-1">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 sticky top-6">
+              <h3 className="font-semibold text-gray-700 mb-4">Current Diagnosis</h3>
+              <div className="flex flex-col gap-3">
+                {patient.diagnoses.map((d, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                    <span className="font-mono text-xs bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded shrink-0">
+                      {d.code}
+                    </span>
+                    <span className="text-sm text-gray-700">{d.name}</span>
+                  </div>
+                ))}
+                {patient.diagnoses.length === 0 && (
+                  <p className="text-sm text-gray-400">No diagnosis recorded yet</p>
+                )}
+              </div>
+
+              <button
+                onClick={() => navigate(`/doctor/diagnosis/${token}`)}
+                className="w-full mt-4 border border-gray-200 text-gray-600 text-sm py-2 rounded-lg hover:bg-gray-50 transition"
+              >
+                ← Back to Diagnosis
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  )
+}
+
+export default Prescription
