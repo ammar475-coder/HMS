@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/auth/Login'
 import ProtectedRoute from './routes/ProtectedRoute'
+import VitalsHistory from './pages/nurse/VitalsHistory'
 import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard'
 import DispenseMedicine from './pages/pharmacy/DispenseMedicine'
 import Billing from './pages/pharmacy/Billing'
@@ -10,8 +11,14 @@ import AddMedicine from './pages/pharmacy/AddMedicine'
 import PrescriptionQueue from './pages/pharmacy/PrescriptionQueue'
 
 // Doctor pages
+import ReceptionistDashboard from './pages/receptionist/ReceptionistDashboard'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import PatientConsultation from './pages/doctor/PatientConsultation'
+
+import NurseDashboard from './pages/nurse/NurseDashboard'
+import PatientQueue from './pages/nurse/PatientQueue'
+import VitalsEntry from './pages/nurse/VitalsEntry'
+
 import Diagnosis from './pages/doctor/Diagnosis'
 import Prescription from './pages/doctor/Prescription'
 import LabOrder from './pages/doctor/LabOrder'
@@ -24,12 +31,19 @@ import TestOrder from './pages/lab/TestOrder'
 import SampleCollection from './pages/lab/SampleCollection'
 import ResultEntry from './pages/lab/ResultEntry'
 import ReportsManagement from './pages/lab/ReportsManagement'
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
+
+        <Route path="/receptionist" element={
+          <ProtectedRoute allowedRole="receptionist">
+            <ReceptionistDashboard />
+          </ProtectedRoute>
+        } />
 
         {/* Doctor module */}
         <Route path="/doctor" element={
@@ -43,6 +57,15 @@ function App() {
           </ProtectedRoute>
         }/>
 
+      <Route path="/nurse/patient-queue" element={
+        <ProtectedRoute allowedRole="nurse"><PatientQueue /></ProtectedRoute>
+      } />
+
+      <Route path="/nurse" element={<ProtectedRoute allowedRole="nurse"><NurseDashboard /></ProtectedRoute>} />
+      <Route path="/nurse/vitals-entry" element={<ProtectedRoute allowedRole="nurse"><VitalsEntry /></ProtectedRoute>} />
+      <Route path="/nurse/vitals-history" element={
+        <ProtectedRoute allowedRole="nurse"><VitalsHistory /></ProtectedRoute>
+      } />
 <Route path="/doctor/diagnosis/:token" element={
   <ProtectedRoute allowedRole="doctor">
     <Diagnosis />
