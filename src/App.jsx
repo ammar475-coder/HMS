@@ -34,9 +34,14 @@ import ReportsManagement from './pages/lab/ReportsManagement'
 
 //admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
-import IPManagement from './pages/admin/IPManagement'
+import IPManagement from './pages/admin/Ipmanagement'
 import Doctors from './pages/admin/Doctors'
 import Staff from './pages/admin/Staff'
+import Vehicles from './pages/admin/Vehicles'
+import AddVehicle from './pages/admin/AddVehicle'
+import Finance from './pages/admin/Finance'
+import FollowUps from './pages/admin/FollowUps'
+import Reports from './pages/admin/Reports'
 
 function App() {
   return (
@@ -179,6 +184,32 @@ function App() {
     <Staff />
   </ProtectedRoute>
 } />
+<Route path="/admin/vehicles" element={
+  <ProtectedRoute allowedRole="admin">
+    <Vehicles />
+  </ProtectedRoute>
+} />
+<Route path="/admin/vehicles/add" element={
+  <ProtectedRoute allowedRole="admin">
+    <AddVehicle />
+  </ProtectedRoute>
+} />
+<Route path="/admin/finance" element={
+  <ProtectedRoute allowedRole="admin">
+    <Finance />
+  </ProtectedRoute>
+} />
+<Route path="/admin/followups" element={
+  <ProtectedRoute allowedRole="admin">
+    <FollowUps />
+  </ProtectedRoute>
+} />
+<Route path="/admin/reports" element={
+  <ProtectedRoute allowedRole="admin">
+    <Reports />
+  </ProtectedRoute>
+} />
+
 
       </Routes>
     </BrowserRouter>

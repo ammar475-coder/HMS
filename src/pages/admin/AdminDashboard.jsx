@@ -213,6 +213,10 @@ onLinkClick={(link) => {
   if (link === 'IP') navigate('/admin/ip')
     if (link === 'Doctors') navigate('/admin/doctors')
     if (link === 'Staff') navigate('/admin/staff')
+      if (link === 'Vehicles') navigate('/admin/vehicles')
+        if (link === 'Finance') navigate('/admin/finance')
+          if (link === 'Follow-ups') navigate('/admin/followups')
+            if (link === 'Reports') navigate('/admin/reports')
 }}      />
 
       {/* ── Main ── */}
