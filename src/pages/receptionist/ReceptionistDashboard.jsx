@@ -25,10 +25,10 @@ const TYPE_STYLES = {
 }
 
 const QUICK_ACTIONS = [
-  { label: "Register Patient",   icon: "👤", color: "text-blue-500",   bg: "bg-blue-50"   },
-  { label: "Book Appointment",   icon: "📅", color: "text-purple-500", bg: "bg-purple-50" },
-  { label: "Add to Queue",       icon: "📋", color: "text-orange-500", bg: "bg-orange-50" },
-  { label: "Collect Bill",       icon: "💳", color: "text-green-500",  bg: "bg-green-50"  },
+  { label: "Register Patient",   icon: "👤", color: "text-blue-500",   bg: "bg-blue-50",   route: "/receptionist/registration" },
+  { label: "Book Appointment",   icon: "📅", color: "text-purple-500", bg: "bg-purple-50", route: "/receptionist/appointments" },
+  { label: "Add to Queue",       icon: "📋", color: "text-orange-500", bg: "bg-orange-50", route: "/receptionist/queue" },
+  { label: "Collect Bill",       icon: "💳", color: "text-green-500",  bg: "bg-green-50",  route: "/receptionist/billing" },
 ]
 
 function ReceptionistDashboard() {
@@ -102,6 +102,7 @@ function ReceptionistDashboard() {
           {QUICK_ACTIONS.map(action => (
             <button
               key={action.label}
+              onClick={() => navigate(action.route)}
               className={`${action.bg} rounded-xl p-5 flex flex-col items-center gap-2 border border-transparent hover:border-gray-200 transition`}
             >
               <span className="text-2xl">{action.icon}</span>

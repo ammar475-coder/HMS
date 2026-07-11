@@ -62,12 +62,17 @@ function BillingCollection() {
 
   const handleNavClick = (link) => {
     setActiveLink(link)
-    if (link === "Dashboard")              navigate('/receptionist')
-    if (link === "Patient Management")     navigate('/receptionist/patients')
-    if (link === "Patient Registration")   navigate('/receptionist/registration')
-    if (link === "Appointment Management") navigate('/receptionist/appointments')
-    if (link === "Queue Management")       navigate('/receptionist/queue')
-    if (link === "Follow-up Management")   navigate('/receptionist/followup')
+    const routeMap = {
+      Dashboard: '/receptionist',
+      'Patient Management': '/receptionist/patients',
+      'Patient Registration': '/receptionist/registration',
+      'Appointment Management': '/receptionist/appointments',
+      'Queue Management': '/receptionist/queue',
+      'Billing Collection': '/receptionist/billing',
+      'Follow-up Management': '/receptionist/followup',
+    }
+
+    if (routeMap[link]) navigate(routeMap[link])
   }
 
   const handleCollect = () => {

@@ -104,8 +104,17 @@ const addPatient = useAddPatient()
 
   const handleNavClick = (link) => {
     setActiveLink(link)
-    if (link === "Dashboard")           navigate('/receptionist')
-    if (link === "Patient Management")  navigate('/receptionist/patients')
+    const routeMap = {
+      Dashboard: '/receptionist',
+      'Patient Management': '/receptionist/patients',
+      'Patient Registration': '/receptionist/registration',
+      'Appointment Management': '/receptionist/appointments',
+      'Queue Management': '/receptionist/queue',
+      'Billing Collection': '/receptionist/billing',
+      'Follow-up Management': '/receptionist/followup',
+    }
+
+    if (routeMap[link]) navigate(routeMap[link])
   }
 
   // Shared input class
